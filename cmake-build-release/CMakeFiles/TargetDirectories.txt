@@ -1,3 +1,0 @@
-E:/projects/tptm/backend/cmake-build-release/CMakeFiles/backend.dir
-E:/projects/tptm/backend/cmake-build-release/CMakeFiles/edit_cache.dir
-E:/projects/tptm/backend/cmake-build-release/CMakeFiles/rebuild_cache.dir

@@ -1,5 +1,0 @@
-# ninja log v6
-32	3642	7466421783916994	CMakeFiles/backend.dir/src/main.cpp.obj	778208d9f4b4b11a
-39	3740	7466421783976149	CMakeFiles/backend.dir/src/SocketManager.cpp.obj	bb1fd3f31f44e5fe
-3741	4011	7466421820994924	backend.exe	4fdb94082c6db634
-15	458	7471530433247603	build.ninja	4181c5eb28782eaa
