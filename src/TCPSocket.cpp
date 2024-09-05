@@ -70,8 +70,6 @@ void TCPSocket::listen() const {
 
         int result = recv(sock, header, sizeof(header), 0);
 
-        std::cout << result;
-
         if (result <= 0) {
             break;
         }
@@ -83,6 +81,45 @@ void TCPSocket::listen() const {
             std::string path(pathBytes.begin(), pathBytes.end());
 
             FileManager::writeFile(sock, path, header[1]);
+
+            constexpr char buffer[255] = {
+                0x6,
+                0
+            };
+
+            send(sock, buffer, sizeof(buffer), 0);
+        }
+
+        else if (type == EFTINFO) {
+            if (header[1] == DIR) {
+                std::vector<unsigned char> pathBytes(header + 3, header + 3 + header[2]);
+                std::string path(pathBytes.begin(), pathBytes.end());
+
+                std::vector<std::string> files = FileManager::readDir(path);
+            }
+        }
+
+        else if (type == EFTREAD) {
+            std::vector<unsigned char> pathBytes(header + 2, header + 2 + header[1]);
+            std::string path(pathBytes.begin(), pathBytes.end());
+
+            std::vector<std::string> files = FileManager::readDir(path);
+
+            std::string sizeString = std::to_string(files.size());
+
+            send(sock, sizeString.c_str(), sizeString.size(), 0);
+
+            recv(sock, header, sizeof(header), 0);
+
+            for (const auto& file : files) {
+                std::string delimited_file = file;
+
+                if (file != files.back()) {
+                    delimited_file += '\n';
+                }
+
+                send(sock, delimited_file.c_str(), delimited_file.size(), 0);
+            }
         }
     }
 }

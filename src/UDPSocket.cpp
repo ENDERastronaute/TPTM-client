@@ -65,10 +65,6 @@ void UDPSocket::listen() {
         std::string message(buffer, result);
         char temp_client_ip[INET_ADDRSTRLEN];
 
-        std::cout << message << std::endl;
-
-
-
         inet_ntop(AF_INET, &reqAddr.sin_addr, temp_client_ip, INET_ADDRSTRLEN);
 
         {

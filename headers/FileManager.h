@@ -9,6 +9,7 @@
 #include <vector>
 #include <winsock2.h>
 #include <fstream>
+#include <filesystem>
 
 class FileManager {
 public:

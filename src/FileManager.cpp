@@ -7,21 +7,19 @@
 #include <iostream>
 
 int FileManager::writeFile(SOCKET sock, const std::string& path, int total) {
-
-    std::cout << path << std::endl;
     std::ofstream outputFile(path, std::ios::binary);
 
     char buffer[4096] = {};
-    int bytesReceived;
 
     if (!outputFile) {
-        std::cout << "erreur fichier";
+        outputFile.close();
         return ERROR_CANTOPEN;
     }
 
     int bytesWritten = 0;
 
-    while ((bytesReceived = recv(sock, buffer, sizeof(buffer), 0)) > 0 || bytesWritten < total) {
+    while (bytesWritten < total) {
+        int bytesReceived = recv(sock, buffer, sizeof(buffer), 0);
         outputFile.write(buffer, bytesReceived);
         bytesWritten += bytesReceived;
     }
@@ -31,3 +29,18 @@ int FileManager::writeFile(SOCKET sock, const std::string& path, int total) {
     return NO_ERROR;
 }
 
+std::vector<std::string> FileManager::readDir(const std::string &path) {
+    std::vector<std::string> files;
+
+    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+        std::string path = entry.path().string();
+
+        if (entry.is_directory()) {
+            path += '\\';
+        }
+
+        files.push_back(path);
+    }
+
+    return files;
+}
