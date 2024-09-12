@@ -3,7 +3,7 @@ project(backend)
 
 set(CMAKE_CXX_STANDARD 26)
 
-include_directories(headers)
+include_directories(headers include)
 
 add_executable(backend src/main.cpp
         src/TCPSocket.cpp

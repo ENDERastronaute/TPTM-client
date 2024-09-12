@@ -4,15 +4,26 @@
 #include "TCPSocket.h"
 
 int main() {
-    UDPSocket server_socket("0.0.0.0", 3000);
+    while (true) {
+        UDPSocket server_socket("0.0.0.0", 3000);
+        TCPSocket client_socket("0.0.0.0", 8000);
 
-    std::thread listener(&UDPSocket::listen, &server_socket);
+        try {
+            std::thread listener(&UDPSocket::listen, &server_socket);
 
-    while (server_socket.getRemoteIp().empty()) {}
+            while (server_socket.getRemoteIp().empty()) {}
 
-    const TCPSocket client_socket("0.0.0.0", 8000);
+            server_socket.close();
 
-    client_socket.connectToServer(server_socket.getRemoteIp(), 8000);
+            listener.join();
 
-    client_socket.listen();
+            client_socket.connectToServer(server_socket.getRemoteIp(), 8000);
+
+            client_socket.listen();
+        }
+        catch (std::exception &e) {
+            server_socket.close();
+            client_socket.stop();
+        }
+    }
 }

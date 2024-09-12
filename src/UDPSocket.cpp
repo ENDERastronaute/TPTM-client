@@ -93,13 +93,6 @@ void UDPSocket::listen() {
 }
 
 /**
- * Stops to listen.
- */
-void UDPSocket::stopListening() {
-    running = false;
-}
-
-/**
  * Gets the remote's IP.
  * @return The remote IP.
  */

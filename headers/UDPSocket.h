@@ -16,8 +16,8 @@ public:
     UDPSocket(const std::string&, int);
     ~UDPSocket();
     void listen();
-    void stopListening();
     std::string getRemoteIp();
+    void close();
 
     std::mutex mtx;
 
@@ -32,7 +32,6 @@ private:
     std::string client_ip;
 
     int init();
-    void close();
 };
 
 

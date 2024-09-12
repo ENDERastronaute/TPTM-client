@@ -15,9 +15,4 @@ enum EFTP {
     EFTREAD = 0x7
 };
 
-enum EFTP_INFOS {
-    DIR = 0x1,
-    SINGLE = 0x2,
-};
-
 #endif //EFTP_H

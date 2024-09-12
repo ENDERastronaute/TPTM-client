@@ -27,6 +27,11 @@ int FileManager::writeFile(SOCKET sock, const std::string& path, int total) {
 
     while (bytesWritten < total) {
         int bytesReceived = recv(sock, buffer, sizeof(buffer), 0);
+
+        if (bytesReceived < 0) {
+            throw std::exception();
+        }
+
         outputFile.write(buffer, bytesReceived);
         bytesWritten += bytesReceived;
     }
@@ -39,20 +44,65 @@ int FileManager::writeFile(SOCKET sock, const std::string& path, int total) {
 /**
  * Reads a directory and outputs the path of all it's content (non-recursive).
  * @param path The path of the directory to be read.
+ * @param filter The filter
+ * @param nodir False you want to get directories, true if you do not. By default false.
  * @return The files' path
  */
-std::vector<std::string> FileManager::readDir(const std::string &path) {
+std::vector<std::string> FileManager::readDir(const std::string &path, const std::string &filter, const bool nodir) {
     std::vector<std::string> files;
 
+    const std::regex re = buildRegex(filter);
+
     for (const auto &entry : std::filesystem::directory_iterator(path)) {
-        std::string path = entry.path().string();
+        std::string p = entry.path().string();
 
-        if (entry.is_directory()) {
-            path += '\\';
+        if (std::regex_match(p, re)) {
+            if (nodir) {
+                if (!entry.is_directory()) {
+                    files.push_back(p);
+                }
+            }
+            else {
+                if (entry.is_directory()) {
+                    p += '\\';
+                }
+
+                files.push_back(p);
+            }
         }
-
-        files.push_back(path);
     }
 
     return files;
+}
+
+std::regex FileManager::buildRegex(const std::string& string) {
+    std::string regex_str = "(";
+
+    for (const char &c : string) {
+        if (c == ' ') {
+            regex_str += ")";
+            regex_str += "|";
+            regex_str += "(";
+        }
+        else if (c == '*') {
+            regex_str += ".*";
+        }
+        else if (c == '.') {
+            regex_str += "\\.";
+        }
+        else if (c == '+') {
+            regex_str += "\\+";
+        }
+        else {
+            regex_str += c;
+        }
+    }
+    regex_str += ")";
+
+    return std::regex(regex_str, std::regex_constants::ECMAScript | std::regex_constants::icase);
+}
+
+std::string FileManager::getFileName(const std::string& path) {
+    std::filesystem::path p(path);
+    return p.filename().string();
 }

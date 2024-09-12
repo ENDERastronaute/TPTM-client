@@ -20,6 +20,13 @@ TCPSocket::TCPSocket(const std::string& ip, int port)
 }
 
 /**
+ * Stops to listen.
+ */
+void TCPSocket::stop() {
+    running = false;
+}
+
+/**
  * Automatically closes and flushes the socket.
  */
 TCPSocket::~TCPSocket() {
@@ -101,25 +108,83 @@ void TCPSocket::listen() const {
         unsigned char type = header[0];
 
         if (type == EFTSEND) {
-            std::vector<unsigned char> pathBytes(header + 3, header + 3 + header[2]);
+            int files_number = header[1];
+
+            send(sock, header, sizeof(header), 0);
+
+            for (int i = 0; i < files_number; i++) {
+                recv(sock, header, sizeof(header), 0);
+                send(sock, header, sizeof(header), 0);
+
+                int size = header[0];
+
+                std::vector<unsigned char> pathBytes(header + 2, header + 2 + header[1]);
+                std::string path(pathBytes.begin(), pathBytes.end());
+
+                FileManager::writeFile(sock, path, size);
+            }
+        }
+
+        else if (type == EFTINFO) {
+            std::vector<unsigned char> pathBytes(header + 2, header + 2 + header[1]);
             std::string path(pathBytes.begin(), pathBytes.end());
 
-            FileManager::writeFile(sock, path, header[1]);
-
-            constexpr char buffer[255] = {
+            char buffer[255] = {
                 0x6,
                 0
             };
 
             send(sock, buffer, sizeof(buffer), 0);
-        }
+            recv(sock, buffer, sizeof(buffer), 0);
 
-        else if (type == EFTINFO) {
-            if (header[1] == DIR) {
-                std::vector<unsigned char> pathBytes(header + 3, header + 3 + header[2]);
-                std::string path(pathBytes.begin(), pathBytes.end());
+            std::vector<unsigned char> filter_vector(buffer + 1, buffer + 1 + buffer[0]);
+            std::string filter(filter_vector.begin(), filter_vector.end());
 
-                std::vector<std::string> files = FileManager::readDir(path);
+            std::vector<std::string> files = FileManager::readDir(path, filter, true);
+
+            std::string files_number = std::to_string(files.size());
+
+            send(sock, files_number.c_str(), files_number.size(), 0);
+            recv(sock, buffer, sizeof(buffer), 0);
+
+            for (const std::string& file : files) {
+                const std::string base_filename = FileManager::getFileName(file);
+
+                send(sock, base_filename.c_str(), base_filename.size(), 0);
+                recv(sock, buffer, sizeof(buffer), 0);
+                std::ifstream fileStream(file, std::ios::in | std::ios::binary);
+
+                if (!fileStream.is_open()) {
+                    return;
+                }
+
+                // Get the file size
+
+                fileStream.seekg(0, std::ios::end);
+                std::streamsize fileSize = fileStream.tellg();
+                fileStream.seekg(0, std::ios::beg);
+
+                std::string fileSizeStr = std::to_string(fileSize);
+
+                send(sock, fileSizeStr.c_str(), fileSizeStr.size(), 0);
+
+                recv(sock, header, sizeof(header), 0);
+
+                while (fileStream) {
+                    char file_buffer[4096];
+                    fileStream.read(file_buffer, sizeof(file_buffer));
+
+                    std::streamsize bytes_read = fileStream.gcount();
+
+                    if (bytes_read > 0) {
+                        ssize_t bytes_sent = send(sock, file_buffer, bytes_read, 0);
+
+                        if (bytes_sent < 0) {
+                            fileStream.close();
+                            return;
+                        }
+                    }
+                }
             }
         }
 
@@ -146,11 +211,4 @@ void TCPSocket::listen() const {
             }
         }
     }
-}
-
-/**
- * Stops to listen.
- */
-void TCPSocket::stop() {
-    running = false;
 }
