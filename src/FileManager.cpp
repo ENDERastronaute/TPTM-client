@@ -6,6 +6,13 @@
 
 #include <iostream>
 
+/**
+* Listens for a file stream and writes it on the disc.
+* @param sock the socket.
+* @param path the path where the file will be written.
+* @param total the total number of bytes that'll be sent through the stream
+* @return 0 if it successfully wrote the file.
+*/
 int FileManager::writeFile(SOCKET sock, const std::string& path, int total) {
     std::ofstream outputFile(path, std::ios::binary);
 
@@ -29,6 +36,11 @@ int FileManager::writeFile(SOCKET sock, const std::string& path, int total) {
     return NO_ERROR;
 }
 
+/**
+ * Reads a directory and outputs the path of all it's content (non-recursive).
+ * @param path The path of the directory to be read.
+ * @return The files' path
+ */
 std::vector<std::string> FileManager::readDir(const std::string &path) {
     std::vector<std::string> files;
 

@@ -8,11 +8,11 @@ int main() {
 
     std::thread listener(&UDPSocket::listen, &server_socket);
 
-    while (server_socket.getClientIp().empty()) {}
+    while (server_socket.getRemoteIp().empty()) {}
 
     const TCPSocket client_socket("0.0.0.0", 8000);
 
-    client_socket.connectToServer(server_socket.getClientIp(), 8000);
+    client_socket.connectToServer(server_socket.getRemoteIp(), 8000);
 
     client_socket.listen();
 }

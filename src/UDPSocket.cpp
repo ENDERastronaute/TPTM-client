@@ -6,16 +6,28 @@
 
 #include <iostream>
 
+/**
+ * Creates a new socket.
+ * @param ip The interface's IP.
+ * @param port The port.
+ */
 UDPSocket::UDPSocket(const std::string& ip, int port)
 : ip(ip), port(port), sock(), wsaData(), sockAddr(), sockAddr_len(sizeof(sockAddr)), running(true)
 {
     init();
 }
 
+/**
+ * Automatically closes and flushes the socket.
+ */
 UDPSocket::~UDPSocket() {
     close();
 }
 
+/**
+ * Init the socket for future usage.
+ * @return 0 if it successfully inited the socket, 1 if there was an error.
+ */
 int UDPSocket::init() {
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != NO_ERROR) {
         return 1;
@@ -40,6 +52,9 @@ int UDPSocket::init() {
     return 0;
 }
 
+/**
+ * Closes and flushes the socket.
+ */
 void UDPSocket::close() {
     running = false;
 
@@ -50,6 +65,9 @@ void UDPSocket::close() {
     WSACleanup();
 }
 
+/**
+ * Listens for incoming messages.
+ */
 void UDPSocket::listen() {
     sockaddr_in reqAddr {};
     int reqAddr_len = sizeof(reqAddr);
@@ -74,11 +92,18 @@ void UDPSocket::listen() {
     }
 }
 
+/**
+ * Stops to listen.
+ */
 void UDPSocket::stopListening() {
     running = false;
 }
 
-std::string UDPSocket::getClientIp() {
+/**
+ * Gets the remote's IP.
+ * @return The remote IP.
+ */
+std::string UDPSocket::getRemoteIp() {
     return client_ip;
 }
 

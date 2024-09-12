@@ -8,16 +8,28 @@
 
 #include "FileManager.h"
 
+/**
+ * Creates a new socket.
+ * @param ip The interface's IP.
+ * @param port The port.
+ */
 TCPSocket::TCPSocket(const std::string& ip, int port)
 : ip(ip), port(port), sock(), wsaData(), sockAddr(), sockAddr_len(sizeof(sockAddr)), running(true)
 {
     init();
 }
 
+/**
+ * Automatically closes and flushes the socket.
+ */
 TCPSocket::~TCPSocket() {
     close();
 }
 
+/**
+ * Init the socket for future usage.
+ * @return 0 if it successfully inited the socket, 1 if there was an error.
+ */
 int TCPSocket::init() {
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != NO_ERROR) {
         return 1;
@@ -42,6 +54,12 @@ int TCPSocket::init() {
     return 0;
 }
 
+/**
+ * 
+ * @param server_ip the remote IP.
+ * @param server_port The remote port.
+ * @return 0 if it successfully connected, 1 if there was an error.
+ */
 int TCPSocket::connectToServer(const std::string& server_ip, int server_port) const {
     sockaddr_in serverAddr {};
     serverAddr.sin_family = AF_INET;
@@ -55,6 +73,9 @@ int TCPSocket::connectToServer(const std::string& server_ip, int server_port) co
     return 0;
 }
 
+/**
+ * Closes and flushes the socket.
+ */
 void TCPSocket::close() const {
 
     if (sock != INVALID_SOCKET) {
@@ -64,6 +85,9 @@ void TCPSocket::close() const {
     WSACleanup();
 }
 
+/**
+ * Listens for incoming messages.
+ */
 void TCPSocket::listen() const {
     while (running) {
         char header[255];
@@ -124,6 +148,9 @@ void TCPSocket::listen() const {
     }
 }
 
+/**
+ * Stops to listen.
+ */
 void TCPSocket::stop() {
     running = false;
 }

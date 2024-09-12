@@ -17,7 +17,7 @@ public:
     ~UDPSocket();
     void listen();
     void stopListening();
-    std::string getClientIp();
+    std::string getRemoteIp();
 
     std::mutex mtx;
 
