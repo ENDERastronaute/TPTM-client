@@ -84,7 +84,6 @@ int TCPSocket::connectToServer(const std::string& server_ip, int server_port) co
  * Closes and flushes the socket.
  */
 void TCPSocket::close() const {
-
     if (sock != INVALID_SOCKET) {
         closesocket(sock);
     }
@@ -108,20 +107,32 @@ void TCPSocket::listen() const {
         unsigned char type = header[0];
 
         if (type == EFTSEND) {
-            int files_number = header[1];
+            uint8_t filesBuffer[8] {};
+
+            send(sock, header, sizeof(header), 0);
+
+            recv(sock, (char*)filesBuffer, sizeof(filesBuffer), 0);
+
+            uint64_t files_number = FileManager::convertToUInt64(filesBuffer);
 
             send(sock, header, sizeof(header), 0);
 
             for (int i = 0; i < files_number; i++) {
+                uint8_t sizeBuffer[8] {};
+
+                recv(sock, (char*)sizeBuffer, sizeof(sizeBuffer), 0);
+                send(sock, header, sizeof(header), 0);
+
+                uint64_t size = FileManager::convertToUInt64(sizeBuffer);
+
                 recv(sock, header, sizeof(header), 0);
                 send(sock, header, sizeof(header), 0);
 
-                int size = header[0];
-
-                std::vector<unsigned char> pathBytes(header + 2, header + 2 + header[1]);
+                std::vector<unsigned char> pathBytes(header + 1, header + 1 + header[0]);
                 std::string path(pathBytes.begin(), pathBytes.end());
 
                 FileManager::writeFile(sock, path, size);
+                send(sock, header, sizeof(header), 0);
             }
         }
 
@@ -158,11 +169,13 @@ void TCPSocket::listen() const {
                     return;
                 }
 
-                // Get the file size
+                // Récupère la taille du fichier
 
                 fileStream.seekg(0, std::ios::end);
                 std::streamsize fileSize = fileStream.tellg();
                 fileStream.seekg(0, std::ios::beg);
+
+                //
 
                 std::string fileSizeStr = std::to_string(fileSize);
 
@@ -185,6 +198,8 @@ void TCPSocket::listen() const {
                         }
                     }
                 }
+
+                recv(sock, header, sizeof(header), 0);
             }
         }
 

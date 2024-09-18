@@ -15,9 +15,8 @@
 class FileManager {
 public:
     static std::vector<std::string> readDir(const std::string&, const std::string& = "*", bool = false);
-    static int writeFile(SOCKET, const std::string&, int);
-    static int writeMultipleFiles(SOCKET);
-    static int sendMultipleFiles(SOCKET);
+    static int writeFile(SOCKET, const std::string&, uint64_t);
+    static uint64_t convertToUInt64(uint8_t (&buffer)[8]);
     static std::string getFileName(const std::string&);
 
 private:

@@ -6,7 +6,7 @@
 int main() {
     while (true) {
         UDPSocket server_socket("0.0.0.0", 3000);
-        TCPSocket client_socket("0.0.0.0", 8000);
+        TCPSocket client_socket("0.0.0.0", 4000);
 
         try {
             std::thread listener(&UDPSocket::listen, &server_socket);
